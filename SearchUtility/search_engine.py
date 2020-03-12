@@ -29,24 +29,12 @@ class SearchEngine(object):
         # score all books for the given query
         for record in self.records['summaries']:
             score = self.run_algo_on(record['summary'], keywords)
-            scores[record['id']] = score
+            scores[(record['summary'], record['id'])] = score
 
         # sort the score to pick best ones
         sorted_scores = sorted(scores.items(), key=lambda item: item[1], reverse=True)
-
-        # get the summary from database, can be avoided but keeping for better memory use
-        for i in range(max_items):
-            book = sorted_scores[i][0]
-            summary = ''
-            for val in self.records['summaries']:
-                if int(val['id']) == int(book):
-                    summary = val['summary']
-                    break
-            # summary = next(val['summary'] for val in self.records['summaries'] if int(val['id']) == int(book))
-            # summary = [val[1] for val in self.records['summaries'] if val[0] == book] # not sure wy this didn't work
-            query_result[summary] = book
-
-        return json.dumps(query_result)
+        ret = json.dumps((dict(dict(sorted_scores[:max_items]).keys())))
+        return ret
 
     def run_algo_on(self, record, keywords):
         normalizer = 50  # to normalize the result, this can be decreased once algo is optimized to remove stopwords
